@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../models/favorit_model.dart';
 import '../navigation/app_routes.dart';
 
 class HalamanLayanan extends StatelessWidget {
@@ -35,12 +37,6 @@ class HalamanLayanan extends StatelessWidget {
                     'jamOperasional': '08.30 - 14.30 WIB',
                     'keterangan': 'Permohonan persetujuan bangunan gedung baru maupun renovasi.',
                   },
-                  {
-                    'namaLayanan': 'Izin Keramaian & Acara Publik',
-                    'dinas': 'Dinas Perhubungan & Satpol PP',
-                    'jamOperasional': '08.00 - 16.00 WIB',
-                    'keterangan': 'Izin penyelenggaraan kegiatan publik yang menggunakan fasilitas umum.',
-                  },
                 ]),
                 _buatDaftarLayanan([
                   {
@@ -55,12 +51,6 @@ class HalamanLayanan extends StatelessWidget {
                     'jamOperasional': '24 Jam Siaga',
                     'keterangan': 'Permintaan armada ambulans darurat gratis wilayah Nusantara.',
                   },
-                  {
-                    'namaLayanan': 'Permohonan Donor Darah PMI',
-                    'dinas': 'PMI & Dinas Kesehatan',
-                    'jamOperasional': '08.00 - 20.00 WIB',
-                    'keterangan': 'Pengajuan kebutuhan stok darah atau pendaftaran donor darah mandiri.',
-                  },
                 ]),
                 _buatDaftarLayanan([
                   {
@@ -68,18 +58,6 @@ class HalamanLayanan extends StatelessWidget {
                     'dinas': 'Dinas Perhubungan',
                     'jamOperasional': '06.00 - 21.00 WIB',
                     'keterangan': 'Pendaftaran kartu subsidi transportasi umum bagi pelajar & lansia.',
-                  },
-                  {
-                    'namaLayanan': 'Uji Kelaikan Kendaraan (KIR)',
-                    'dinas': 'Dinas Perhubungan',
-                    'jamOperasional': '08.00 - 14.00 WIB',
-                    'keterangan': 'Pendaftaran pemeriksaan berkala kelaikan jalan kendaraan umum/barang.',
-                  },
-                  {
-                    'namaLayanan': 'Laporan Kendala Rute Bus Rapid',
-                    'dinas': 'Dinas Perhubungan & BRT Manager',
-                    'jamOperasional': '24 Jam (Online)',
-                    'keterangan': 'Pengaduan kelambatan rute atau fasilitas halte transportasi publik.',
                   },
                 ]),
               ],
@@ -94,32 +72,45 @@ class HalamanLayanan extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: dataLayanan.length,
-      itemBuilder: (itemContext, index) {
+      itemBuilder: (context, index) {
         final item = dataLayanan[index];
+        final namaLayanan = item['namaLayanan']!;
+
+        // Membaca status favorit secara reaktif
+        final isFav = context.watch<FavoritModel>().isFavorit(namaLayanan);
+
         return Card(
           elevation: 1,
           margin: const EdgeInsets.symmetric(vertical: 6),
           child: ListTile(
-            leading: const Icon(Icons.touch_app, color: Colors.indigo),
+            leading: IconButton(
+              icon: Icon(
+                isFav ? Icons.star : Icons.star_border,
+                color: isFav ? Colors.amber : Colors.grey,
+              ),
+              onPressed: () {
+                // Mengubah state tanpa merebuild tombol ini sendiri via read()
+                context.read<FavoritModel>().toggleFavorit(namaLayanan);
+              },
+            ),
             title: Text(
-              item['namaLayanan']!,
+              namaLayanan,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(item['dinas']!),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
               final hasil = await Navigator.pushNamed(
-                itemContext,
+                context,
                 AppRoutes.detailLayanan,
                 arguments: item,
               );
 
-              if (hasil != null && itemContext.mounted) {
-                ScaffoldMessenger.of(itemContext).showSnackBar(
+              if (hasil != null && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(hasil.toString()),
                     backgroundColor: Colors.green,
-                    duration: const Duration(seconds: 3),
                   ),
                 );
               }

@@ -41,35 +41,7 @@ class AppRoutes {
     return MaterialPageRoute(
       builder: (context) => Scaffold(
         appBar: AppBar(title: const Text('Route Tidak Dikenal')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  size: 64,
-                  color: Colors.amber,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Route "${settings.name}" tidak ditemukan.',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Kembali'),
-                ),
-              ],
-            ),
-          ),
-        ),
+        body: Center(child: Text('Route "${settings.name}" tidak ditemukan.')),
       ),
     );
   }

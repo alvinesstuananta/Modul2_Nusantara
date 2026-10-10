@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'models/favorit_model.dart';
+import 'models/pengajuan_model.dart';
 import 'navigation/app_routes.dart';
 
 void main() {
-  runApp(const AplikasiNusantaraCerdas());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoritModel()),
+        ChangeNotifierProvider(create: (_) => PengajuanModel()),
+      ],
+      child: const AplikasiNusantaraCerdas(),
+    ),
+  );
 }
 
 class AplikasiNusantaraCerdas extends StatelessWidget {

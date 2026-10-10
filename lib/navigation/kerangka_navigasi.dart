@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../models/pengajuan_model.dart';
 import '../pages/halaman_beranda.dart';
 import '../pages/halaman_layanan.dart';
 import '../pages/halaman_warga.dart';
@@ -24,7 +26,7 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
   final List<String> _judul = const [
     'Beranda Smart City',
     'Layanan Publik',
-    'Profil Warga & Laporan',
+    'Profil & Layanan Warga',
   ];
 
   void _pilihTujuan(int indeks) {
@@ -38,39 +40,54 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
     final double lebar = MediaQuery.of(context).size.width;
     final bool layarLebar = lebar >= 600;
 
+    // Hanya membaca totalPengajuan agar hanya badge yang diperbarui
+    final totalPengajuan = context.select<PengajuanModel, int>(
+      (model) => model.totalPengajuan,
+    );
+
     return Scaffold(
       appBar: AppBar(title: Text(_judul[_indeksTerpilih]), elevation: 2),
       drawer: _buatDrawer(),
-      body: layarLebar ? _tataLetakLebar() : _halaman[_indeksTerpilih],
-      bottomNavigationBar: layarLebar ? null : _buatBilahBawah(),
+      body: layarLebar
+          ? _tataLetakLebar(totalPengajuan)
+          : IndexedStack(index: _indeksTerpilih, children: _halaman),
+      bottomNavigationBar: layarLebar ? null : _buatBilahBawah(totalPengajuan),
     );
   }
 
-  Widget _buatBilahBawah() {
+  Widget _buatBilahBawah(int totalPengajuan) {
     return NavigationBar(
       selectedIndex: _indeksTerpilih,
       onDestinationSelected: _pilihTujuan,
-      destinations: const [
-        NavigationDestination(
+      destinations: [
+        const NavigationDestination(
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home),
           label: 'Beranda',
         ),
-        NavigationDestination(
+        const NavigationDestination(
           icon: Icon(Icons.grid_view_outlined),
           selectedIcon: Icon(Icons.grid_view),
           label: 'Layanan',
         ),
         NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
+          icon: Badge(
+            label: Text('$totalPengajuan'),
+            isLabelVisible: totalPengajuan > 0,
+            child: const Icon(Icons.person_outline),
+          ),
+          selectedIcon: Badge(
+            label: Text('$totalPengajuan'),
+            isLabelVisible: totalPengajuan > 0,
+            child: const Icon(Icons.person),
+          ),
           label: 'Warga',
         ),
       ],
     );
   }
 
-  Widget _tataLetakLebar() {
+  Widget _tataLetakLebar(int totalPengajuan) {
     return Row(
       children: [
         NavigationRail(
@@ -81,26 +98,36 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Icon(Icons.location_city, size: 36, color: Colors.indigo),
           ),
-          destinations: const [
-            NavigationRailDestination(
+          destinations: [
+            const NavigationRailDestination(
               icon: Icon(Icons.home_outlined),
               selectedIcon: Icon(Icons.home),
               label: Text('Beranda'),
             ),
-            NavigationRailDestination(
+            const NavigationRailDestination(
               icon: Icon(Icons.grid_view_outlined),
               selectedIcon: Icon(Icons.grid_view),
               label: Text('Layanan'),
             ),
             NavigationRailDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person),
-              label: Text('Warga'),
+              icon: Badge(
+                label: Text('$totalPengajuan'),
+                isLabelVisible: totalPengajuan > 0,
+                child: const Icon(Icons.person_outline),
+              ),
+              selectedIcon: Badge(
+                label: Text('$totalPengajuan'),
+                isLabelVisible: totalPengajuan > 0,
+                child: const Icon(Icons.person),
+              ),
+              label: const Text('Warga'),
             ),
           ],
         ),
         const VerticalDivider(thickness: 1, width: 1),
-        Expanded(child: _halaman[_indeksTerpilih]),
+        Expanded(
+          child: IndexedStack(index: _indeksTerpilih, children: _halaman),
+        ),
       ],
     );
   }
@@ -153,19 +180,6 @@ class _KerangkaNavigasiState extends State<KerangkaNavigasi> {
             Navigator.pop(context);
             Navigator.pushNamed(context, AppRoutes.tentang);
           },
-        ),
-        ListTile(
-          leading: const Icon(Icons.error_outline, color: Colors.orange),
-          title: const Text('Uji Route Salah'),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, '/route-invalid-test');
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.logout, color: Colors.red),
-          title: const Text('Keluar', style: TextStyle(color: Colors.red)),
-          onTap: () => Navigator.pop(context),
         ),
       ],
     );
